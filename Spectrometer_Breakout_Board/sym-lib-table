@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "SamacSys_Parts")(type "KiCad")(uri "${KIPRJMOD}/FH33J-4S-0.5SH(10)/SamacSys_Parts.kicad_sym")(options "")(descr ""))
+)

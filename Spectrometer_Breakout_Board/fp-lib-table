@@ -1,0 +1,5 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "Spectrometer_Breakout_Board")(type "KiCad")(uri "${KIPRJMOD}/FH33J-4S-0.5SH(10)/SamacSys_Parts.pretty")(options "")(descr ""))
+  (lib (name "FH33J-4S-0")(type "KiCad")(uri "${KIPRJMOD}/FH33J-4S-0.pretty")(options "")(descr ""))
+)

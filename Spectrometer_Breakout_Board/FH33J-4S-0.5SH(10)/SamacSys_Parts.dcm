@@ -1,0 +1,15 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP NE555DR
+D Single Precision Timer
+K
+F http://www.ti.com/lit/ds/symlink/ne555.pdf
+$ENDCMP
+#
+$CMP FH33J-4S-0.5SH_10_
+D FFC & FPC Connectors 4P SMT HORIZ ZIF AU 1.2MM HT .5MM PITCH
+K
+F https://www.hirose.com/en/product/document?clcode=CL0580-1329-0-10&productname=FH33J-4S-0.5SH(10)&series=FH33&documenttype=2DDrawing&lang=en&documentid=0000947103
+$ENDCMP
+#
+#End Doc Library
