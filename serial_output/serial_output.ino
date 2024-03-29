@@ -1,34 +1,6 @@
-/*
-
-  Multiple Serial test
-
-  Receives from the main serial port, sends to the others.
-
-  Receives from serial port 1, sends to the main serial (Serial 0).
-
-  This example works only with boards with more than one serial like Arduino Mega, Due, Zero etc.
-
-  The circuit:
-
-  - any serial device attached to Serial port 1
-
-  - Serial Monitor open on Serial port 0
-
-  created 30 Dec 2008
-
-  modified 20 May 2012
-
-  by Tom Igoe & Jed Roach
-
-  modified 27 Nov 2015
-
-  by Arturo Guadalupi
-
-  This example code is in the public domain.
-
-*/
 bool command_executing = false;
-const int cmd[] = {0, 1};
+const int cmd_1024[] = {0, 1};
+
 
 void setup() {
 
@@ -40,22 +12,28 @@ void setup() {
 }
 
 void loop() {
+  uint32_t spectrum[256];
 
-  if (Serial1.available() && command_executing) {
-    // Serial1.print("Serial1 Available");
-
-    int inByte = Serial1.read();
-
-    Serial.print(inByte);
-
-  }
-
-  if (Serial1.available() && !command_executing) {
+  if (Serial1.available() > 0 && !command_executing) {
 
     // int inByte = Serial.read();
+    Serial.println("Writing command ");
+    Serial1.write(cmd_packet0[0]);
+    Serial1.write(cmd_packet0[1]);
+    command_executing = true;
 
-    Serial1.write(cmd[0]);
-    Serial1.write(cmd[1]);
+    char buffer[1024];
+    Serial1.readBytes(buffer, 1024);
+    Serial.println("Read 1024 bytes:");
+
+    memcpy(spectrum, buffer, sizeof(buffer));
+    for (int i= 0; i < sizeof(spectrum); i++) {
+      Serial.println(spectrum[i], DEC);
+    }
+    Serial.println();
+    
+    command_executing = false;
+    delay(100);
   }
   
 }

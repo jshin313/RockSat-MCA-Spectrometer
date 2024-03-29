@@ -66,7 +66,8 @@ bool Connect( WinUSBD *winUSBD )	// open USB device and start the communication 
 void SendRequest( WinUSBD *winUSBD )	// send request for a spectrum to device
 {
 	ULONG cbWritten;
-	BYTE spccmd[2] = { 0, 16 };			// cmd to return 4096x32-bit spectrum
+	/* BYTE spccmd[2] = { 0, 16 };			// cmd to return 4096x32-bit spectrum */
+	BYTE spccmd[2] = { 0, 2 };			// cmd to return 512-bit spectrum
 
 	WinUsb_WritePipe(winUSBD->winusbHandle, winUSBD->pipeOutId, spccmd, 2, &cbWritten, 0);
 }

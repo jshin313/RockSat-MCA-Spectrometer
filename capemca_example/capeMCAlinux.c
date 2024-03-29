@@ -16,7 +16,7 @@
 //  the port in /dev/bus/usb that is assigned to the plugged in MCA device.
 //
 // Compile:
-//   $ gcc -o capeMCA libusb.so capeMCAlinux.c
+// $ gcc -o capeMCA capeMCAlinux.c `pkg-config --libs --cflags libusb-1.0`
 // Run:
 //   $ ./capeMCA
 //
@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <memory.h>
 // here the libusb is in the folder with this program so
-#include "libusb.h"
+#include <libusb.h>
 //change this if your libusb.h is somewhere else, e.g.
 //#include <libusb-1.0/libusb.h>
 #include "packet0type.h"

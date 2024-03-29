@@ -22,12 +22,13 @@ public:
 	void DeleteFirst( void );				// delete first element in list
 	void Insert( Element *insert, Element *after );
 	void Reverse( void );					// reverse order of entire list
+	void Clear( void );						// delete all list elements
 };
 
 // Methods for a simplified template class for doubly-linked lists of arbitrary Elements
 
 template <class Element>
-List<Element>::~List()						// delete the entire list and all elements
+void List<Element>::Clear(void)				// delete all elements in list
 {
 	Element *e;
 	while ( last )
@@ -36,6 +37,13 @@ List<Element>::~List()						// delete the entire list and all elements
 		last = last->prev;
 		delete e;							// delete the element at tail
 		}
+	first = last;							// both will be NULL now
+}
+
+template <class Element>
+List<Element>::~List()						// delete the entire list and all elements
+{
+	Clear();
 }
 
 template <class Element>
