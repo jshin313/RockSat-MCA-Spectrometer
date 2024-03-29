@@ -27,7 +27,6 @@
 #define EP_OUT 0x01
 #define EP_IN 0x01  // For some reason it is 0x03 that returns the info. Why is 0x83 not working???
 
-
 MAX3421E  Max;
 USB     Usb;
 EpInfo ep_info[WAD_NUM_EP];
@@ -60,25 +59,30 @@ void setup(){
   while (!Serial); // Wait for serial port to connect - used on Leonardo, Teensy and other boards with built-in USB CDC serial connection
 #endif
   Serial.println("Start");
-  if (Usb.Init() == -1){
+  while (Usb.Init() == -1){
     Serial.println("USB Initialization FAILED.");
-  } else {
-    Serial.println("USB Initialization Succeeded.");
-  }
+    delay(200);
+  } 
+  Serial.println("USB Initialization Succeeded.");
   delay(200);
 }
 
 void loop(){
   Usb.Task();
   if(Usb.getUsbTaskState() == USB_STATE_RUNNING){
+
     if (!is_WAD_configured){
       WAD_init();
     } else{
       byte rcode = WAD_request();
-      if(rcode && rcode != hrNAK) {
-          Serial.print("Fail to sending cmd to device. Rcode: ");
-          Serial.println(rcode);
-          return;
+
+      if (rcode == hrNAK) {
+        Serial.println("Error: hrNAK");
+      }
+
+      if (rcode && rcode != hrNAK) {
+        // Try reconfiguring device if request to MCA doesn't work
+        WAD_init();
       }
     }
    }
@@ -115,8 +119,7 @@ void WAD_init(){
     Serial.println("The End Device is not a Welch Allyn Device.");
     return;
    }
-   Serial.println("Connection Succeed");
-   is_WAD_configured = true;
+   Serial.println("USB Configuration of MCA Succeeded.");
 
    Usb.setConf(WAD_ADDR, ep_info[CONTROL_PIPE].epAddr, 0x01);
    if(rcode){
@@ -125,19 +128,20 @@ void WAD_init(){
    }
    Serial.println("Device is successfully configured.");
 
+  is_WAD_configured = true;
    
    Serial.println("Device connected");
    delay(200);
 }
 
-byte WAD_request(){
+byte WAD_request(){  
+  Serial.println("Requesting data...");
+
   uint8_t buf[SPECTRUM_SIZE * 4];
   uint32_t spectrum[SPECTRUM_SIZE];
 
   uint16_t len = sizeof buf;
-  byte rcode = 0;
-  
-  rcode = Usb.outTransfer(WAD_ADDR, ep_info[OUTPUT_PIPE].epAddr, sizeof cmd, cmd);
+  byte rcode = Usb.outTransfer(WAD_ADDR, ep_info[OUTPUT_PIPE].epAddr, sizeof cmd, cmd);
   if(rcode){
     Serial.println("Sending command failed.");
     return rcode;
@@ -150,9 +154,6 @@ byte WAD_request(){
   delay(1000);
 
   rcode = Usb.inTransfer(WAD_ADDR, ep_info[INPUT_PIPE].epAddr, &len, buf, EP_POLL);
- 
-  // Serial.print(len);
-  // Serial.println(" bytes read");
 
   if(rcode && rcode != hrNAK){
     Serial.print("Failed to read command reply from 0x81. Rcode: ");
