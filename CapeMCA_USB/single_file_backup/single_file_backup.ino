@@ -24,8 +24,6 @@
 #define WAD_PID    0x290
 
 #define WAD_ADDR 0x01
-// #define EP_OUT 0x01
-// #define EP_IN 0x81
 #define EP_OUT 0x01
 #define EP_IN 0x01  // For some reason it is 0x03 that returns the info. Why is 0x83 not working???
 
@@ -165,8 +163,6 @@ byte WAD_request(){
       Serial.println(spectrum[i], DEC);
     }
   }
-
-  
 
   delay(1000);
 

@@ -8,7 +8,8 @@
 #include "version.h"
 #include "winUSBD.h"
 
-#define SPECTRUM_SIZE 4096							// number of channels in spectrum
+/* #define SPECTRUM_SIZE 4096							// number of channels in spectrum */
+#define SPECTRUM_SIZE 512							// number of channels in spectrum
 
 WinUSBDs winUSBDs;									// USB devices that have been enumerated
 													// Linux-style command-line help message
@@ -67,7 +68,7 @@ void SendRequest( WinUSBD *winUSBD )	// send request for a spectrum to device
 {
 	ULONG cbWritten;
 	/* BYTE spccmd[2] = { 0, 16 };			// cmd to return 4096x32-bit spectrum */
-	BYTE spccmd[2] = { 0, 2 };			// cmd to return 512-bit spectrum
+	BYTE spccmd[2] = { 0, 2 };			// cmd to return 512x32-bit spectrum
 
 	WinUsb_WritePipe(winUSBD->winusbHandle, winUSBD->pipeOutId, spccmd, 2, &cbWritten, 0);
 }

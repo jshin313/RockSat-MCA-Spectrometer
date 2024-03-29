@@ -10,7 +10,8 @@
 #include "packet0type.h"
 #include "version.h"
 
-#define SPECTRUM_SIZE 4096							// max. number of channels in spectrum
+/* #define SPECTRUM_SIZE 4096							// max. number of channels in spectrum */
+#define SPECTRUM_SIZE 512							// max. number of channels in spectrum
 
 
 static char help[] = "CapeMCA Uart Interface\n\n\
@@ -54,7 +55,7 @@ HANDLE OpenComPort( char *port, DWORD baudRate, BYTE dataBits, BYTE parity, BYTE
 	SecureZeroMemory(&dcb, sizeof(DCB));		//  Initialize the DCB structure.
 	dcb.DCBlength = sizeof(DCB);
 												//  Open a handle to the specified com port.
-	commFile = CreateFile("\\\\.\\COM6",
+	commFile = CreateFile("\\\\.\\COM3",
 							GENERIC_READ | GENERIC_WRITE,
 							0,							//  must be opened with exclusive-access
 							NULL,						//  default security attributes
