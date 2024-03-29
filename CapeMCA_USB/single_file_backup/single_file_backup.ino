@@ -35,8 +35,11 @@ bool is_WAD_configured = false;
 
 static unsigned char wad_status;
 
+uint8_t cmd[2] = {0, 1}; // returns 256x32-bit spectrum
+#define SPECTRUM_SIZE 256
 
-uint8_t cmd[2] = {0, 2};
+// uint8_t cmd[2] = {0, 2}; // returns 512x32-bit spectrum
+// #define SPECTRUM_SIZE 512
 
 void printArray(uint8_t* inputArray, int arraySize);
 void resetArray(uint8_t* inputArray, int arraySize);
@@ -58,7 +61,9 @@ void setup(){
 #endif
   Serial.println("Start");
   if (Usb.Init() == -1){
-    Serial.println("OSC did not start.");
+    Serial.println("USB Initialization FAILED.");
+  } else {
+    Serial.println("USB Initialization Succeeded.");
   }
   delay(200);
 }
@@ -67,10 +72,10 @@ void loop(){
   Usb.Task();
   if(Usb.getUsbTaskState() == USB_STATE_RUNNING){
     if (!is_WAD_configured){
-      WAD_init();  
-    }else{
+      WAD_init();
+    } else{
       byte rcode = WAD_request();
-      if(rcode && rcode != hrNAK){
+      if(rcode && rcode != hrNAK) {
           Serial.print("Fail to sending cmd to device. Rcode: ");
           Serial.println(rcode);
           return;
@@ -126,9 +131,8 @@ void WAD_init(){
 }
 
 byte WAD_request(){
-  uint8_t buf[2048];
-
-  uint32_t spectrum[sizeof(buf)/sizeof(uint32_t)];
+  uint8_t buf[SPECTRUM_SIZE * 4];
+  uint32_t spectrum[SPECTRUM_SIZE];
 
   uint16_t len = sizeof buf;
   byte rcode = 0;
@@ -157,7 +161,7 @@ byte WAD_request(){
     Serial.println("Succeeded in reading reply.");
     memcpy(spectrum, buf, sizeof(buf));
 
-    for (int i = 0; i < sizeof(spectrum)/sizeof(spectrum[0]); i++) {
+    for (int i = 0; i < SPECTRUM_SIZE; i++) {
       Serial.print(i);
       Serial.print(", ");
       Serial.println(spectrum[i], DEC);
