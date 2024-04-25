@@ -1,9 +1,11 @@
 #include <usbhub.h>
 #include "pgmstrings.h"
+#include "desc.h"
 #ifdef dobogusinclude
 #include <spi4teensy3.h>
 #endif
 #include <SPI.h>
+#include <avr/wdt.h>
 
 #define CapeMCA_NUM_EP 0x03
 #define CONTROL_PIPE 0
@@ -19,7 +21,9 @@
 
 #define CapeMCA_ADDR 0x01
 #define EP_OUT 0x01
-#define EP_IN 0x01  // For some reason it is 0x03 that returns the info. Why is 0x83 not working???
+#define EP_IN 0x01  // For some reason it is 0x01 that returns the info. Why is 0x81 not working???
+
+#define SWITCH_PIN 22
 
 USB Usb;
 EpInfo ep_info[CapeMCA_NUM_EP];
@@ -34,6 +38,7 @@ uint8_t cmd[2] = { 0, 1 };  // returns 256x32-bit spectrum
 // #define SPECTRUM_SIZE 512
 
 void resetArray(uint8_t* inputArray, int arraySize);
+void wdt_setup();
 
 void CapeMCA_init();
 byte CapeMCA_request();
@@ -45,15 +50,23 @@ void setup() {
     ;  // Wait for serial port to connect - used on Leonardo, Teensy and other boards with built-in USB CDC serial connection
 #endif
   Serial.println("Start");
+
+  // For switching spectrometer on and off
+  pinMode(SWITCH_PIN, OUTPUT);
+  digitalWrite(SWITCH_PIN, LOW);
+
   while (Usb.Init() == -1) {
     Serial.println("USB Initialization FAILED.");
     delay(200);
   }
   Serial.println("USB Initialization Succeeded.");
   delay(200);
+
+  // wdt_setup();
 }
 
 void loop() {
+
   Usb.Task();
   if (Usb.getUsbTaskState() == USB_STATE_RUNNING) {
     Serial.println("USB_STATE_RUNNING");
@@ -63,17 +76,25 @@ void loop() {
     } else {
       byte rcode = CapeMCA_request();
       if (rcode == hrSUCCESS || rcode == hrBUSY) {
+        wdt_reset();
       }
     }
-  } else {
-    Serial.print("USB State: 0x");
-    Serial.println(Usb.getUsbTaskState(), HEX);
+  } else if (Usb.getUsbTaskState() != 0x20 && Usb.getUsbTaskState() != 0x40 && Usb.getUsbTaskState() != 0x51 && Usb.getUsbTaskState() != 0x50) {
+      Serial.print("USB Task State: ");
+      Serial.println(Usb.getUsbTaskState(), HEX);
+      // // Turn spectrometer off and on again
+      // wdt_disable();
+      // digitalWrite(SWITCH_PIN, LOW);
+      // delay(3000);
+      // digitalWrite(SWITCH_PIN, HIGH);
+      // delay(5000);
+      // wdt_setup();
   }
 }
 
 void CapeMCA_init() {
   Serial.println("Initializing device.");
-  
+
   USB_DEVICE_DESCRIPTOR buf;
   byte rcode = 0;
   USB_DEVICE_DESCRIPTOR* device_descriptor;
@@ -116,6 +137,11 @@ void CapeMCA_init() {
 
   Serial.println("Device connected");
   delay(200);
+
+  AddressPool& addrPool = Usb.GetAddressPool();
+  UsbDevice* p = addrPool.GetUsbDevicePtr(CapeMCA_ADDR);
+  PrintAllAddresses(p);
+  PrintAllDescriptors(p, &Usb);
 }
 
 byte CapeMCA_request() {
@@ -135,7 +161,7 @@ byte CapeMCA_request() {
 
   resetArray(buf, sizeof(buf));
 
-  delay(1000);
+  delay(10);
 
   rcode = Usb.inTransfer(CapeMCA_ADDR, ep_info[INPUT_PIPE].epAddr, &len, buf, EP_POLL);
 
@@ -148,11 +174,14 @@ byte CapeMCA_request() {
     Serial.println("Succeeded in reading reply.");
     memcpy(spectrum, buf, sizeof(buf));
 
-    for (int i = 0; i < SPECTRUM_SIZE; i++) {
+    for (int i = 0; i < SPECTRUM_SIZE; i++) { 
       Serial.print(i);
       Serial.print(", ");
       Serial.println(spectrum[i], DEC);
     }
+
+    delay(10);
+
   }
 
   delay(1000);
@@ -164,4 +193,11 @@ void resetArray(uint8_t* inputArray, int arraySize) {
   for (int i = 0; i < arraySize; i++) {
     inputArray[i] = 0;
   }
+}
+
+void wdt_setup() {
+  wdt_disable();
+  delay(3000);
+  wdt_enable(WDTO_2S);
+  Serial.println("WDT ENABLED");
 }
